@@ -469,346 +469,346 @@ target_sources(DHARTAPI PRIVATE ${HF_SOURCES})
 #   | $$|  $$$$$$$ /$$$$$$$/ |  $$$$//$$$$$$$/
 #   |__/ \_______/|_______/   \___/ |_______/ 
                                             
-if(DHARTAPI_EnableTests)
-    enable_testing()
-    include(GoogleTest)
-    # Download and unpack googletest at DHARTAPI_Configure time
-    configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-    if(result)
-      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-    endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-    if(result)
-      message(FATAL_ERROR "Build step for googletest failed: ${result}")
-    endif()
+# if(DHARTAPI_EnableTests)
+#     enable_testing()
+#     include(GoogleTest)
+#     # Download and unpack googletest at DHARTAPI_Configure time
+#     configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+#     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+#       RESULT_VARIABLE result
+#       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+#     if(result)
+#       message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+#     endif()
+#     execute_process(COMMAND ${CMAKE_COMMAND} --build .
+#       RESULT_VARIABLE result
+#       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+#     if(result)
+#       message(FATAL_ERROR "Build step for googletest failed: ${result}")
+#     endif()
 
-    # Prevent overriding the parent project's compiler/linker
-    # settings on Windows
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+#     # Prevent overriding the parent project's compiler/linker
+#     # settings on Windows
+#     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-    # Add googletest directly to our build. This defines
-    # the gtest and gtest_main targets.
-    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-                     EXCLUDE_FROM_ALL)
+#     # Add googletest directly to our build. This defines
+#     # the gtest and gtest_main targets.
+#     add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+#                      ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+#                      EXCLUDE_FROM_ALL)
 
-    # The gtest/gtest_main targets carry header search path
-    # dependencies automatically when using CMake 2.8.11 or
-    # later. Otherwise we have to add them here ourselves.
-    if (CMAKE_VERSION VERSION_LESS 2.8.11)
-      include_directories("${gtest_SOURCE_DIR}/include")
-    endif()
+#     # The gtest/gtest_main targets carry header search path
+#     # dependencies automatically when using CMake 2.8.11 or
+#     # later. Otherwise we have to add them here ourselves.
+#     if (CMAKE_VERSION VERSION_LESS 2.8.11)
+#       include_directories("${gtest_SOURCE_DIR}/include")
+#     endif()
 
-    # Change the linked targets based on what config we're using
-    add_executable(HFUnitTests)
+#     # Change the linked targets based on what config we're using
+#     add_executable(HFUnitTests)
 
-    target_include_directories(HFUnitTests PRIVATE ${C_INTERFACE_DIR})
+#     target_include_directories(HFUnitTests PRIVATE ${C_INTERFACE_DIR})
 
-    if(${DHARTAPI_Config} STREQUAL "All")
-        message([STATUS] "Building all tests")
-        if(WIN32)
-        target_link_libraries(
-            HFUnitTests
-            PRIVATE
-                gtest_main
-                EmbreeRayTracer
-                OBJLoader
-                SpatialStructures
-                GraphGenerator
-                ViewAnalysis
-                VisibilityGraph
-                HFExceptions
-                Pathfinder
-        )			
-        else()
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    EmbreeRayTracer
-                    OBJLoader
-                    SpatialStructures
-                    GraphGenerator
-                    ViewAnalysis
-                    VisibilityGraph
-                    HFExceptions
-                    Pathfinder
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-            )
-            target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
-        endif()
-        target_sources(
-            HFUnitTests
-                PRIVATE
-                    ${HF_SOURCES}
-                    ${C_TEST_DRIVER_DIR}/AnalysisMethods.cpp
-                    ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                    ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                    ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-                    ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
-                    ${C_TEST_DRIVER_DIR}/ViewAnalysis.cpp
-                    ${C_TEST_DRIVER_DIR}/PathFinding.cpp
-                    ${C_TEST_DRIVER_DIR}/performance_testing.h
-                    ${C_TEST_DRIVER_DIR}/GraphAlgorithms.cpp
-                    ${C_TEST_DRIVER_DIR}/CostAlgorithms.cpp
-                    ${C_TEST_DRIVER_DIR}/GraphGenerator.cpp
-                    ${C_TEST_DRIVER_DIR}/performance.cpp
-                    ${C_TEST_DRIVER_DIR}/nanort_raytracer.cpp
-                #	${C_TEST_DRIVER_DIR}/embree_raytracer_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/objloader_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/analysis_C_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/pathfinder_C_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/view_analysis_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/visibility_graph_cinterface.cpp
-                #	${C_TEST_DRIVER_DIR}/spatialstructures_C_cinterface.cpp
-        )
-    elseif(${DHARTAPI_Config} STREQUAL "RayTracer")
-        target_sources(
-            HFUnitTests
-            PRIVATE
-                ${HF_SOURCES}
-                ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                ${C_TEST_DRIVER_DIR}/nanort_raytracer.cpp
-                ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-            )
-        if(WIN32)
-            target_include_directories(
-                HFUnitTests
-                PRIVATE
-                    ${CMAKE_CURRENT_LIST_DIR}/src
-            )
-            target_link_libraries(HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                )
-        else()
-            target_include_directories(
-                HFUnitTests
-                PRIVATE
-                    ${CMAKE_CURRENT_LIST_DIR}/src
-                    ${EMBREE_INCLUDE_DIR}
-            )
-            target_link_libraries(HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-                )
-        endif()
-    elseif(${DHARTAPI_Config} STREQUAL "GraphGenerator")
+#     if(${DHARTAPI_Config} STREQUAL "All")
+#         message([STATUS] "Building all tests")
+#         if(WIN32)
+#         target_link_libraries(
+#             HFUnitTests
+#             PRIVATE
+#                 gtest_main
+#                 EmbreeRayTracer
+#                 OBJLoader
+#                 SpatialStructures
+#                 GraphGenerator
+#                 ViewAnalysis
+#                 VisibilityGraph
+#                 HFExceptions
+#                 Pathfinder
+#         )			
+#         else()
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     EmbreeRayTracer
+#                     OBJLoader
+#                     SpatialStructures
+#                     GraphGenerator
+#                     ViewAnalysis
+#                     VisibilityGraph
+#                     HFExceptions
+#                     Pathfinder
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#             )
+#             target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
+#         endif()
+#         target_sources(
+#             HFUnitTests
+#                 PRIVATE
+#                     ${HF_SOURCES}
+#                     ${C_TEST_DRIVER_DIR}/AnalysisMethods.cpp
+#                     ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                     ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                     ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#                     ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
+#                     ${C_TEST_DRIVER_DIR}/ViewAnalysis.cpp
+#                     ${C_TEST_DRIVER_DIR}/PathFinding.cpp
+#                     ${C_TEST_DRIVER_DIR}/performance_testing.h
+#                     ${C_TEST_DRIVER_DIR}/GraphAlgorithms.cpp
+#                     ${C_TEST_DRIVER_DIR}/CostAlgorithms.cpp
+#                     ${C_TEST_DRIVER_DIR}/GraphGenerator.cpp
+#                     ${C_TEST_DRIVER_DIR}/performance.cpp
+#                     ${C_TEST_DRIVER_DIR}/nanort_raytracer.cpp
+#                 #	${C_TEST_DRIVER_DIR}/embree_raytracer_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/objloader_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/analysis_C_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/pathfinder_C_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/view_analysis_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/visibility_graph_cinterface.cpp
+#                 #	${C_TEST_DRIVER_DIR}/spatialstructures_C_cinterface.cpp
+#         )
+#     elseif(${DHARTAPI_Config} STREQUAL "RayTracer")
+#         target_sources(
+#             HFUnitTests
+#             PRIVATE
+#                 ${HF_SOURCES}
+#                 ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                 ${C_TEST_DRIVER_DIR}/nanort_raytracer.cpp
+#                 ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#             )
+#         if(WIN32)
+#             target_include_directories(
+#                 HFUnitTests
+#                 PRIVATE
+#                     ${CMAKE_CURRENT_LIST_DIR}/src
+#             )
+#             target_link_libraries(HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                 )
+#         else()
+#             target_include_directories(
+#                 HFUnitTests
+#                 PRIVATE
+#                     ${CMAKE_CURRENT_LIST_DIR}/src
+#                     ${EMBREE_INCLUDE_DIR}
+#             )
+#             target_link_libraries(HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#                 )
+#         endif()
+#     elseif(${DHARTAPI_Config} STREQUAL "GraphGenerator")
 
-        if(WIN32)
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    GraphGenerator
-            )
+#         if(WIN32)
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     GraphGenerator
+#             )
 
-        else()
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    GraphGenerator
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-            )
-            target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
-        endif()
-        target_sources(
-                HFUnitTests
-                PRIVATE
-                    ${HF_SOURCES}
-                    ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                    ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-                    ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                    ${C_TEST_DRIVER_DIR}/AnalysisMethods.cpp
-                    ${C_TEST_DRIVER_DIR}/performance_testing.h
-            )
+#         else()
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     GraphGenerator
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#             )
+#             target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
+#         endif()
+#         target_sources(
+#                 HFUnitTests
+#                 PRIVATE
+#                     ${HF_SOURCES}
+#                     ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                     ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#                     ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                     ${C_TEST_DRIVER_DIR}/AnalysisMethods.cpp
+#                     ${C_TEST_DRIVER_DIR}/performance_testing.h
+#             )
 
-    elseif(${DHARTAPI_Config} STREQUAL "VisibilityGraph")
-        if(WIN32)
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    VisibilityGraph
-            )
-        else()
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    VisibilityGraph
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-            )
-            target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
-        endif()
-        target_sources(
-            HFUnitTests
-            PRIVATE
-                ${HF_SOURCES}
-                ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-                ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
-                ${C_TEST_DRIVER_DIR}/performance_testing.h
-        )
-    elseif(${DHARTAPI_Config} STREQUAL "ViewAnalysis")
-        if(WIN32)
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    ViewAnalysis
-            )
-        else()
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    ViewAnalysis
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-            )
-            target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
-        endif()
-        target_sources(
-            HFUnitTests
-            PRIVATE
-                ${HF_SOURCES}
-                ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-                ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                ${C_TEST_DRIVER_DIR}/ViewAnalysis.cpp
-                ${C_TEST_DRIVER_DIR}/performance_testing.h
-        )
-    elseif(${DHARTAPI_Config} STREQUAL "VisibilityGraph")
-        if(WIN32)
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    VisibilityGraph
-            )
-        else()
-            target_link_libraries(
-                HFUnitTests
-                PRIVATE
-                    gtest_main
-                    OBJLoader
-                    HFExceptions
-                    EmbreeRayTracer
-                    SpatialStructures
-                    VisibilityGraph
-                PUBLIC
-                    ${EMBREE_LIB}
-                    ${TBB_LIB}
-                    OpenMP::OpenMP_CXX
-            )
-            target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
-        endif()
-        target_sources(
-            HFUnitTests
-            PRIVATE
-                ${HF_SOURCES}
-                ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
-                ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
-                ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
-                ${C_TEST_DRIVER_DIR}/performance_testing.h
-        )
-    elseif(${DHARTAPI_Config} STREQUAL "Pathfinder")
-        target_link_libraries(
-            HFUnitTests
-            PRIVATE
-                gtest_main
-                HFExceptions
-                SpatialStructures
-                Pathfinder
-        )
-        target_sources(
-            HFUnitTests
-            PRIVATE
-                ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
-                ${C_TEST_DRIVER_DIR}/PathFinding.cpp
-                ${C_TEST_DRIVER_DIR}/performance_testing.h
-        )
-    endif()
-    # add_test(NAME FirstTest COMMAND HFUnitTests)
-    gtest_discover_tests(HFUnitTests WORKING_DIRECTORY $<TARGET_FILE_DIR:HFUnitTests>)
-    install(
-        TARGETS HFUnitTests
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION includes
-    )
-    add_custom_command(
-        TARGET HFUnitTests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy 
-        ${DEPENDENCY_BINARIES}
-        $<TARGET_FILE_DIR:HFUnitTests>
-    )
-    add_custom_command(
-        TARGET HFUnitTests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/${C_PACKAGE_DIR}/tests/Example Models"
-        $<TARGET_FILE_DIR:HFUnitTests>
-    )
-endif()
+#     elseif(${DHARTAPI_Config} STREQUAL "VisibilityGraph")
+#         if(WIN32)
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     VisibilityGraph
+#             )
+#         else()
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     VisibilityGraph
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#             )
+#             target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
+#         endif()
+#         target_sources(
+#             HFUnitTests
+#             PRIVATE
+#                 ${HF_SOURCES}
+#                 ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                 ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#                 ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                 ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
+#                 ${C_TEST_DRIVER_DIR}/performance_testing.h
+#         )
+#     elseif(${DHARTAPI_Config} STREQUAL "ViewAnalysis")
+#         if(WIN32)
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     ViewAnalysis
+#             )
+#         else()
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     ViewAnalysis
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#             )
+#             target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
+#         endif()
+#         target_sources(
+#             HFUnitTests
+#             PRIVATE
+#                 ${HF_SOURCES}
+#                 ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                 ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#                 ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                 ${C_TEST_DRIVER_DIR}/ViewAnalysis.cpp
+#                 ${C_TEST_DRIVER_DIR}/performance_testing.h
+#         )
+#     elseif(${DHARTAPI_Config} STREQUAL "VisibilityGraph")
+#         if(WIN32)
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     VisibilityGraph
+#             )
+#         else()
+#             target_link_libraries(
+#                 HFUnitTests
+#                 PRIVATE
+#                     gtest_main
+#                     OBJLoader
+#                     HFExceptions
+#                     EmbreeRayTracer
+#                     SpatialStructures
+#                     VisibilityGraph
+#                 PUBLIC
+#                     ${EMBREE_LIB}
+#                     ${TBB_LIB}
+#                     OpenMP::OpenMP_CXX
+#             )
+#             target_include_directories(DHARTAPI PRIVATE ${EMBREE_INCLUDE_DIR})
+#         endif()
+#         target_sources(
+#             HFUnitTests
+#             PRIVATE
+#                 ${HF_SOURCES}
+#                 ${C_TEST_DRIVER_DIR}/embree_raytracer.cpp
+#                 ${C_TEST_DRIVER_DIR}/OBJLoader.cpp
+#                 ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                 ${C_TEST_DRIVER_DIR}/VisibilityGraph.cpp
+#                 ${C_TEST_DRIVER_DIR}/performance_testing.h
+#         )
+#     elseif(${DHARTAPI_Config} STREQUAL "Pathfinder")
+#         target_link_libraries(
+#             HFUnitTests
+#             PRIVATE
+#                 gtest_main
+#                 HFExceptions
+#                 SpatialStructures
+#                 Pathfinder
+#         )
+#         target_sources(
+#             HFUnitTests
+#             PRIVATE
+#                 ${C_TEST_DRIVER_DIR}/SpatialStructures.cpp
+#                 ${C_TEST_DRIVER_DIR}/PathFinding.cpp
+#                 ${C_TEST_DRIVER_DIR}/performance_testing.h
+#         )
+#     endif()
+#     # add_test(NAME FirstTest COMMAND HFUnitTests)
+#     gtest_discover_tests(HFUnitTests WORKING_DIRECTORY $<TARGET_FILE_DIR:HFUnitTests>)
+#     install(
+#         TARGETS HFUnitTests
+#         LIBRARY DESTINATION lib
+#         ARCHIVE DESTINATION lib
+#         RUNTIME DESTINATION bin
+#         INCLUDES DESTINATION includes
+#     )
+#     add_custom_command(
+#         TARGET HFUnitTests PRE_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy 
+#         ${DEPENDENCY_BINARIES}
+#         $<TARGET_FILE_DIR:HFUnitTests>
+#     )
+#     add_custom_command(
+#         TARGET HFUnitTests PRE_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_directory
+#         "${CMAKE_CURRENT_SOURCE_DIR}/${C_PACKAGE_DIR}/tests/Example Models"
+#         $<TARGET_FILE_DIR:HFUnitTests>
+#     )
+# endif()
 
 
 

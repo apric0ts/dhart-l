@@ -8,7 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
-#include <view_analysis.h>
+// #include <view_analysis.h>
 #include <HFExceptions.h>
 
 #include <objloader_C.h>
